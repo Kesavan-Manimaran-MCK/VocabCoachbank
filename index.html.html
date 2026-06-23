@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabCoach — Daily Banking Exam Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --border: #E2DDD5;
+    --border-strong: #C8C2B8;
+    --text: #1A1814;
+    --text-2: #6B6560;
+    --text-3: #9E9890;
+    --accent: #2D5FA3;
+    --accent-bg: #EBF0FA;
+    --accent-text: #1B3E72;
+    --success: #1A6B42;
+    --success-bg: #E8F5EE;
+    --danger: #B33A2A;
+    --danger-bg: #FCECEA;
+    --warn-bg: #FEF7E6;
+    --warn-text: #7A5000;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 10;
+  }
+
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .streak-pill {
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid #F0D98A;
+  }
+
+  .page { display: none; padding: 24px; flex: 1; }
+  .page.active { display: block; }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    letter-spacing: -0.4px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .muted { font-size: 14px; color: var(--text-2); margin-bottom: 20px; line-height: 1.6; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-num { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--text-3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+    transition: background 0.12s, border-color 0.12s;
+  }
+
+  .btn:hover { background: var(--bg); }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--surface);
+    border-color: var(--text);
+  }
+
+  .btn-primary:hover { background: #333; }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-accent:hover { background: #1B3E72; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+
+  .quiz-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 10px;
+  }
+
+  .quiz-word {
+    font-family: 'Instrument Serif', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+
+  .quiz-pos {
+    font-size: 13px;
+    color: var(--text-3);
+    font-style: italic;
+    margin-bottom: 22px;
+  }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+
+  .opt {
+    padding: 12px 10px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.4;
+    transition: border-color 0.12s, background 0.12s;
+  }
+
+  .opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-bg); }
+  .opt.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+  .opt.wrong { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+  .opt:disabled { cursor: default; }
+
+  .feedback-box {
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .feedback-ok { background: var(--success-bg); color: var(--success); }
+  .feedback-bad { background: var(--danger-bg); color: var(--danger); }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    margin-bottom: 5px;
+    letter-spacing: 0.2px;
+  }
+
+  input[type="text"], textarea {
+    display: block;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus, textarea:focus { border-color: var(--accent); background: var(--surface); }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .word-entry-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .entry-num {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-3);
+  }
+
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.12s;
+  }
+
+  .remove-btn:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+
+  .word-list-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .word-list-item:last-child { border-bottom: none; }
+
+  .wli-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
+  .wli-word { font-weight: 600; font-size: 15px; }
+  .wli-date { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+  .wli-meaning { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-top: 3px; }
+  .wli-ex { font-size: 12px; color: var(--text-3); font-style: italic; margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--border); }
+
+  .done-big {
+    font-family: 'Instrument Serif', serif;
+    font-size: 48px;
+    text-align: center;
+    margin: 8px 0 4px;
+  }
+
+  .done-title { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .done-sub { text-align: center; font-size: 14px; color: var(--text-2); margin-bottom: 24px; }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+    margin-bottom: 20px;
+    background: none;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+  }
+
+  .back-link:hover { color: var(--accent); }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 99px;
+    margin-bottom: 10px;
+  }
+
+  .badge-accent { background: var(--accent-bg); color: var(--accent-text); border: 1px solid #BDD0F0; }
+  .badge-success { background: var(--success-bg); color: var(--success); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text-3);
+    font-size: 14px;
+  }
+
+  .empty-state .emoji { font-size: 32px; display: block; margin-bottom: 10px; }
+
+  @media (max-width: 520px) {
+    .shell { border: none; }
+  }
+
+  /* Vocab Play */
+  .play-btn-home {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--radius);
+    border: 1.5px dashed #A8BFE8;
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+    transition: background 0.12s, border-color 0.12s;
+    letter-spacing: 0.1px;
+  }
+  .play-btn-home:hover { background: #D8E6F7; border-color: var(--accent); }
+
+  .play-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .play-card-top {
+    background: linear-gradient(135deg, #2D5FA3 0%, #1B3E72 100%);
+    padding: 28px 24px 22px;
+    text-align: center;
+    position: relative;
+  }
+
+  .play-round-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 12px;
+  }
+
+  .play-word-display {
+    font-family: 'Instrument Serif', serif;
+    font-size: 44px;
+    font-weight: 400;
+    color: #fff;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .play-pos-display {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    font-style: italic;
+  }
+
+  .play-card-body { padding: 20px; }
+
+  .play-mode-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .play-tab {
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s;
+  }
+
+  .play-tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .play-input-area { margin-bottom: 14px; }
+
+  .play-reveal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  .play-reveal.show { display: block; }
+  .play-reveal-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-3); margin-bottom: 6px; }
+  .play-reveal-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  .play-score-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .play-score-num { font-size: 20px; font-weight: 600; color: var(--text); }
+  .play-score-label { color: var(--text-3); flex: 1; }
+
+  .play-self-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .btn-got-it {
+    padding: 11px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--radius);
+    border: 1px solid var(--success);
+    background: var(--success-bg);
+    color: var(--success);
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+
+  .btn-missed {
+    padding: 11px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--radius);
+    border: 1px solid var(--danger);
+    background: var(--danger-bg);
+    color: var(--danger);
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+
+  .btn-got-it:hover, .btn-missed:hover { opacity: 0.8; }
+
+  .play-done-banner {
+    text-align: center;
+    padding: 30px 0 10px;
+  }
+
+  .play-done-emoji { font-size: 40px; margin-bottom: 8px; }
+  .play-done-title { font-family: 'Instrument Serif', serif; font-size: 22px; margin-bottom: 4px; }
+  .play-done-sub { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
+
+  .play-mcq-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+
+  /* word card hover */
+  .word-list-item { transition: background 0.1s; border-radius: var(--radius); padding: 12px 6px; }
+  .word-list-item:hover { background: var(--bg); }
+
+  @keyframes slide {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(200%); }
+    100% { transform: translateX(-100%); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">Vocab<span>Coach</span></div>
+    <div class="streak-pill" id="top-streak">🔥 0 day streak</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <h1>Your daily<br>word practice</h1>
+    <p class="muted">Review what you've learned, then add today's new words.</p>
+    <div class="stat-grid" id="home-stats">
+      <div class="stat-box"><div class="stat-num">0</div><div class="stat-label">Total words</div></div>
+      <div class="stat-box"><div class="stat-num">0</div><div class="stat-label">Today</div></div>
+      <div class="stat-box"><div class="stat-num">0</div><div class="stat-label">Reviewed</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="startDay()">▶ Start today's session</button>
+    <button class="btn" onclick="showAllWords()">📚 Browse all saved words</button>
+    <button class="play-btn-home" onclick="startVocabPlay()">🎮 Vocab Play — quick fire round!</button>
+    <button class="btn" onclick="exportWords()" style="font-size:13px;color:var(--text-2);border-color:var(--border)">⬇ Export word list</button>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="page" id="page-review">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-label">Question 1 of 4</span>
+        <span id="q-score">0 correct</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="q-progress" style="width:0%"></div></div>
+    </div>
+    <div class="quiz-eyebrow" id="q-eyebrow">What does this word mean?</div>
+    <div class="quiz-word" id="q-word">—</div>
+    <div class="quiz-pos" id="q-pos"></div>
+    <div class="options" id="q-options"></div>
+    <div id="q-feedback"></div>
+    <div id="q-next" style="display:none">
+      <button class="btn btn-accent" onclick="nextQuestion()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- LOG TODAY'S WORDS -->
+  <div class="page" id="page-log">
+    <button class="back-link" onclick="showPage('page-home')">← Back</button>
+    <h1>Today's<br>new words</h1>
+    <p class="muted">Add 1–6 words. Just the word and meaning is enough.</p>
+    <div id="entry-list"></div>
+    <button class="btn" onclick="addEntry()" style="font-size:13px;margin-bottom:20px">+ Add another word</button>
+    <button class="btn btn-primary" onclick="saveAll()">Save words ✓</button>
+  </div>
+
+  <!-- ALL WORDS -->
+  <div class="page" id="page-allwords">
+    <button class="back-link" id="back-allwords">← Back</button>
+    <h1>Browse words</h1>
+
+    <!-- search + sort bar -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+      <div style="flex:1;position:relative">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:15px;pointer-events:none">🔍</span>
+        <input type="text" id="aw-search" placeholder="Search word or meaning…"
+          style="padding-left:32px;margin-bottom:0"
+          oninput="renderAllWords()">
+      </div>
+      <select id="aw-sort" onchange="renderAllWords()"
+        style="font-family:Inter,sans-serif;font-size:13px;padding:10px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);cursor:pointer;outline:none">
+        <option value="alpha">A → Z</option>
+        <option value="date">Newest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+
+    <p class="muted" id="allwords-meta" style="margin-bottom:14px"></p>
+    <div id="allwords-list"></div>
+  </div>
+
+  <!-- EDIT WORD MODAL (inline page) -->
+  <div class="page" id="page-edit">
+    <button class="back-link" onclick="showPage('page-allwords');renderAllWords()">← Back to browse</button>
+    <h1>Edit word</h1>
+    <p class="muted">Fix any mistakes and save.</p>
+    <div class="card" style="margin-bottom:16px">
+      <label>Word</label>
+      <input type="text" id="edit-word">
+      <label>Part of speech</label>
+      <input type="text" id="edit-pos" placeholder="adjective, noun, verb…">
+      <label>Meaning</label>
+      <textarea id="edit-meaning"></textarea>
+      <label>Example sentence</label>
+      <input type="text" id="edit-example" placeholder="Optional">
+    </div>
+    <button class="btn btn-primary" onclick="saveEdit()">Save changes ✓</button>
+    <button class="btn" id="edit-delete-btn" style="color:var(--danger);border-color:var(--danger)">Delete this word</button>
+  </div>
+
+  <!-- DONE -->
+  <div class="page" id="page-done">
+    <div class="done-big" id="done-emoji">🎉</div>
+    <div class="done-title" id="done-title">Session complete!</div>
+    <div class="done-sub" id="done-sub"></div>
+    <div class="stat-grid" id="done-stats"></div>
+    <div class="divider"></div>
+    <div id="done-word-list"></div>
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" onclick="showPage('page-home'); refreshHome()">Back to home</button>
+    </div>
+  </div>
+
+  <!-- SENTENCE CHALLENGE -->
+  <div class="page" id="page-sentence">
+
+    <!-- loading state -->
+    <div id="sc-loading" style="display:none;text-align:center;padding:60px 0">
+      <div style="font-size:32px;margin-bottom:12px">🤔</div>
+      <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px">Generating your question…</div>
+      <div style="font-size:13px;color:var(--text-3)">Claude is cooking up something fresh</div>
+      <div style="margin:20px auto;width:40px;height:4px;background:var(--border);border-radius:99px;overflow:hidden">
+        <div id="sc-loader-bar" style="height:100%;width:30%;background:var(--accent);border-radius:99px;animation:slide 1.2s ease-in-out infinite"></div>
+      </div>
+    </div>
+
+    <!-- question card -->
+    <div id="sc-question-area" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div>
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-3)" id="sc-qtype-label">Fill in the blank</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="sc-counter">Q 1</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:13px;color:var(--text-2)">Score: <strong id="sc-score">0</strong></div>
+          <button onclick="loadSentenceQuestion()" style="font-size:12px;padding:5px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text-2);cursor:pointer">⟳ Skip</button>
+        </div>
+      </div>
+
+      <!-- word chip -->
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-bg);border:1px solid #BDD0F0;border-radius:99px;padding:5px 14px;margin-bottom:14px">
+        <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--accent-text)">Word</span>
+        <span style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--accent-text)" id="sc-word-chip">—</span>
+      </div>
+
+      <!-- meaning hint -->
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:14px;font-style:italic" id="sc-meaning-hint"></div>
+
+      <!-- question box -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:16px">
+        <div style="font-size:15px;color:var(--text);line-height:1.7;font-weight:500" id="sc-question-text">—</div>
+      </div>
+
+      <label style="font-size:12px;color:var(--text-2);margin-bottom:6px;display:block">Your answer</label>
+      <textarea id="sc-answer" placeholder="Type your answer here…" style="margin-bottom:12px"></textarea>
+
+      <button class="btn btn-primary" onclick="submitSentenceAnswer()" id="sc-submit-btn">Submit answer →</button>
+    </div>
+
+    <!-- feedback area -->
+    <div id="sc-feedback-area" style="display:none">
+      <div id="sc-feedback-box" style="border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px;line-height:1.7"></div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-3);margin-bottom:6px">Your answer</div>
+        <div style="font-size:14px;color:var(--text)" id="sc-your-answer-display"></div>
+      </div>
+
+      <button class="btn btn-accent" onclick="loadSentenceQuestion()">Next question →</button>
+      <button class="back-link" onclick="showPage('page-home');refreshHome()" style="margin-top:8px;display:block">← Exit challenge</button>
+    </div>
+
+    <!-- error state -->
+    <div id="sc-error" style="display:none;text-align:center;padding:40px 0">
+      <div style="font-size:32px;margin-bottom:10px">⚠️</div>
+      <div style="font-size:14px;color:var(--text-2);margin-bottom:16px" id="sc-error-msg">Something went wrong. Try again.</div>
+      <button class="btn btn-primary" onclick="loadSentenceQuestion()">Try again</button>
+      <button class="back-link" onclick="showPage('page-home');refreshHome()" style="margin-top:8px;display:block">← Back to home</button>
+    </div>
+
+  </div>
+
+  <!-- VOCAB PLAY -->
+  <div class="page" id="page-play">
+    <div id="play-active">
+      <div class="play-score-bar">
+        <div>
+          <div class="play-score-num" id="play-score-display">0</div>
+          <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px">score</div>
+        </div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:13px;color:var(--text-2)" id="play-round-display">Word 1 of —</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="play-streak-display"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="play-score-num" id="play-total-display">0</div>
+          <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px">played</div>
+        </div>
+      </div>
+
+      <div class="play-card">
+        <div class="play-card-top">
+          <div class="play-round-badge" id="play-mode-label">WRITE THE MEANING</div>
+          <div class="play-word-display" id="play-word">—</div>
+          <div class="play-pos-display" id="play-pos"></div>
+        </div>
+        <div class="play-card-body">
+          <label style="font-size:12px;color:var(--text-2);margin-bottom:6px;display:block">Write the meaning or use it in a sentence</label>
+          <textarea id="play-type-input" placeholder="Type your answer here…"></textarea>
+          <div id="play-type-reveal" class="play-reveal" style="display:none">
+            <div class="play-reveal-label">Actual meaning</div>
+            <div class="play-reveal-text" id="play-type-reveal-text"></div>
+            <div id="play-type-example" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"></div>
+          </div>
+          <div id="play-verdict" style="display:none;border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.6"></div>
+          <div id="play-type-check">
+            <button class="btn btn-accent" onclick="checkPlayTyped()">Check answer →</button>
+          </div>
+          <div id="play-type-next" style="display:none">
+            <button class="btn btn-accent" onclick="nextPlayWord()">Next word →</button>
+          </div>
+        </div>
+      </div>
+      <button class="back-link" onclick="showPage('page-home'); refreshHome()" style="margin-top:4px">← Exit play</button>
+    </div>
+
+    <div id="play-done" style="display:none">
+      <div class="play-done-banner">
+        <div class="play-done-emoji" id="play-done-emoji">🎉</div>
+        <div class="play-done-title" id="play-done-title">Great round!</div>
+        <div class="play-done-sub" id="play-done-sub"></div>
+      </div>
+      <div class="stat-grid" id="play-done-stats"></div>
+      <button class="btn btn-primary" onclick="startVocabPlay()" style="margin-bottom:10px">🔄 Play again</button>
+      <button class="btn" onclick="showPage('page-home'); refreshHome()">Back to home</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STORE = 'vcapp_v1';
+const TODAY = new Date().toISOString().slice(0,10);
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORE)) || seed(); } catch { return seed(); }
+}
+function seed() { return { words: [], streak: 0, lastSession: null, totalReviewed: 0 }; }
+function save(d) { localStorage.setItem(STORE, JSON.stringify(d)); }
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+let rQ = [], rIdx = 0, rScore = 0, rOpts = [], rAnswered = false;
+
+function refreshHome() {
+  const d = load();
+  const today = d.words.filter(w => w.date === TODAY).length;
+  const reviewed = d.totalReviewed || 0;
+  document.getElementById('home-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${d.words.length}</div><div class="stat-label">Total words</div></div>
+    <div class="stat-box"><div class="stat-num">${today}</div><div class="stat-label">Today</div></div>
+    <div class="stat-box"><div class="stat-num">${reviewed}</div><div class="stat-label">Reviewed</div></div>
+  `;
+  document.getElementById('top-streak').textContent = `🔥 ${d.streak||0} day streak`;
+}
+
+function startDay() {
+  const d = load();
+  const due = pickReviewWords(d);
+  if (due.length) {
+    rQ = due; rIdx = 0; rScore = 0;
+    showPage('page-review');
+    renderQuestion();
+  } else {
+    openLog();
+  }
+}
+
+function pickReviewWords(d) {
+  const past = d.words.filter(w => w.date !== TODAY && w.meaning);
+  if (!past.length) return [];
+  past.sort((a,b) => (a.reviewedAt||'') < (b.reviewedAt||'') ? -1 : 1);
+  return past.slice(0, Math.min(4, past.length));
+}
+
+function renderQuestion() {
+  const d = load();
+  const q = rQ[rIdx];
+  const total = rQ.length;
+  rAnswered = false;
+
+  document.getElementById('q-label').textContent = `Question ${rIdx+1} of ${total}`;
+  document.getElementById('q-score').textContent = `${rScore} correct`;
+  document.getElementById('q-progress').style.width = Math.round((rIdx/total)*100) + '%';
+
+  const diff = Math.floor((new Date(TODAY)-new Date(q.date))/86400000);
+  const when = diff===1 ? 'from yesterday' : diff>1 ? `from ${diff} days ago` : 'recent';
+  document.getElementById('q-eyebrow').textContent = `What does this word mean? (${when})`;
+  document.getElementById('q-word').textContent = q.word;
+  document.getElementById('q-pos').textContent = q.pos || '';
+
+  const distract = d.words
+    .filter(w => w.word !== q.word && w.meaning)
+    .sort(() => Math.random()-0.5)
+    .slice(0,3)
+    .map(w => w.meaning.slice(0,90));
+
+  const correctMeaning = q.meaning.slice(0,90);
+  const opts = [correctMeaning, ...distract].sort(() => Math.random()-0.5);
+  rOpts = opts;
+
+  document.getElementById('q-options').innerHTML = opts.map((o,i) =>
+    `<button class="opt" onclick="checkAns(${i})">${o}</button>`
+  ).join('');
+  document.getElementById('q-feedback').innerHTML = '';
+  document.getElementById('q-next').style.display = 'none';
+}
+
+function checkAns(idx) {
+  if (rAnswered) return;
+  rAnswered = true;
+  const d = load();
+  const q = rQ[rIdx];
+  const correct = q.meaning.slice(0,90);
+  const picked = rOpts[idx];
+  const isOk = picked === correct;
+  if (isOk) rScore++;
+
+  const btns = document.querySelectorAll('.opt');
+  btns.forEach((b,i) => {
+    if (rOpts[i] === correct) b.classList.add('correct');
+    else if (i === idx && !isOk) b.classList.add('wrong');
+    b.disabled = true;
+  });
+
+  const w = d.words.find(x => x.word === q.word);
+  if (w) { w.reviewedAt = TODAY; d.totalReviewed = (d.totalReviewed||0)+1; save(d); }
+
+  document.getElementById('q-feedback').innerHTML = isOk
+    ? `<div class="feedback-box feedback-ok">✓ Correct! <strong>${q.word}</strong>${q.example ? ` — "${q.example}"` : ''}</div>`
+    : `<div class="feedback-box feedback-bad">✗ The answer was: ${q.meaning}</div>`;
+  document.getElementById('q-next').style.display = 'block';
+}
+
+function nextQuestion() {
+  rIdx++;
+  if (rIdx >= rQ.length) {
+    document.getElementById('q-progress').style.width = '100%';
+    openLog(rScore, rQ.length);
+  } else {
+    renderQuestion();
+  }
+}
+
+let entryCount = 0;
+function openLog(quizScore, quizTotal) {
+  showPage('page-log');
+  entryCount = 0;
+  document.getElementById('entry-list').innerHTML = '';
+  const sub = document.querySelector('#page-log .muted');
+  if (quizScore !== undefined) {
+    sub.innerHTML = `Quiz done: <strong>${quizScore}/${quizTotal}</strong> correct. Now add today's words.`;
+  } else {
+    sub.textContent = 'Add 1–6 words. Just the word and meaning is enough.';
+  }
+  addEntry();
+}
+
+function addEntry() {
+  const list = document.getElementById('entry-list');
+  if (list.children.length >= 6) return;
+  entryCount++;
+  const id = 'e' + Date.now();
+  const num = list.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'word-entry-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-num">Word ${num}</span>
+      <button class="remove-btn" onclick="document.getElementById('${id}').remove()" aria-label="Remove">×</button>
+    </div>
+    <label>Word *</label>
+    <input type="text" id="${id}-w" placeholder="e.g. Prudent">
+    <label>Part of speech</label>
+    <input type="text" id="${id}-p" placeholder="adjective, noun, verb…">
+    <label>Meaning *</label>
+    <textarea id="${id}-m" placeholder="What does it mean?"></textarea>
+    <label>Example sentence</label>
+    <input type="text" id="${id}-e" placeholder="Use it in a sentence (optional)">
+  `;
+  list.appendChild(div);
+}
+
+function saveAll() {
+  const cards = document.querySelectorAll('.word-entry-card');
+  const entries = [];
+  cards.forEach(c => {
+    const id = c.id;
+    const word = document.getElementById(id+'-w')?.value?.trim();
+    const pos = document.getElementById(id+'-p')?.value?.trim();
+    const meaning = document.getElementById(id+'-m')?.value?.trim();
+    const ex = document.getElementById(id+'-e')?.value?.trim();
+    if (word && meaning) entries.push({ word, pos, meaning, example: ex, date: TODAY, reviewedAt: null });
+    else if (word && !meaning) entries.push({ word, pos, meaning: '', example: ex, date: TODAY, reviewedAt: null });
+  });
+  const valid = entries.filter(e => e.word);
+  if (!valid.length) { alert('Please add at least one word!'); return; }
+
+  const d = load();
+  d.words.push(...valid);
+  const yest = new Date(); yest.setDate(yest.getDate()-1);
+  const yStr = yest.toISOString().slice(0,10);
+  if (d.lastSession === yStr) d.streak = (d.streak||0)+1;
+  else if (d.lastSession !== TODAY) d.streak = 1;
+  d.lastSession = TODAY;
+  save(d);
+
+  showDone(valid, d);
+}
+
+function showDone(newWords, d) {
+  showPage('page-done');
+  const emoji = d.streak >= 7 ? '🏆' : d.streak >= 3 ? '🔥' : '🎉';
+  document.getElementById('done-emoji').textContent = emoji;
+  document.getElementById('done-title').textContent = d.streak >= 3
+    ? `${d.streak} day streak! Keep going!`
+    : 'Words saved!';
+  document.getElementById('done-sub').textContent = `Come back tomorrow — the quiz will be waiting.`;
+  document.getElementById('done-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${newWords.length}</div><div class="stat-label">Added today</div></div>
+    <div class="stat-box"><div class="stat-num">${d.words.length}</div><div class="stat-label">Total words</div></div>
+    <div class="stat-box"><div class="stat-num">${d.streak||1}</div><div class="stat-label">Day streak</div></div>
+  `;
+  document.getElementById('done-word-list').innerHTML = newWords.map(w => `
+    <div class="word-list-item">
+      <div class="wli-top"><span class="wli-word">${w.word}</span><span style="font-size:11px;color:var(--text-3)">${w.pos||''}</span></div>
+      <div class="wli-meaning">${w.meaning||'—'}</div>
+      ${w.example ? `<div class="wli-ex">${w.example}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+/* ───── BROWSE ALL WORDS ───── */
+function showAllWords() {
+  showPage('page-allwords');
+  document.getElementById('aw-search').value = '';
+  document.getElementById('aw-sort').value = 'alpha';
+  renderAllWords();
+}
+
+function renderAllWords() {
+  const d = load();
+  const q = (document.getElementById('aw-search')?.value || '').trim().toLowerCase();
+  const sort = document.getElementById('aw-sort')?.value || 'alpha';
+
+  let words = d.words.filter(w =>
+    !q ||
+    w.word.toLowerCase().includes(q) ||
+    (w.meaning||'').toLowerCase().includes(q) ||
+    (w.example||'').toLowerCase().includes(q)
+  );
+
+  if (sort === 'alpha') words = words.sort((a,b) => a.word.toLowerCase() > b.word.toLowerCase() ? 1 : -1);
+  else if (sort === 'date') words = words.sort((a,b) => b.date > a.date ? 1 : -1);
+  else words = words.sort((a,b) => a.date > b.date ? 1 : -1);
+
+  const meta = document.getElementById('allwords-meta');
+  meta.textContent = q
+    ? `${words.length} result${words.length!==1?'s':''} for "${q}"`
+    : `${d.words.length} word${d.words.length!==1?'s':''} saved`;
+
+  if (!words.length) {
+    document.getElementById('allwords-list').innerHTML = `<div class="empty-state"><span class="emoji">${q ? '🔍' : '📖'}</span>${q ? 'No words match your search.' : 'No words yet. Start your first session!'}</div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (sort === 'alpha') {
+    let lastLetter = null;
+    words.forEach(w => {
+      const letter = w.word[0].toUpperCase();
+      if (letter !== lastLetter) {
+        html += `<div style="font-size:13px;font-weight:600;color:var(--accent);padding:14px 0 6px;border-bottom:1px solid var(--accent-bg);margin-bottom:4px;letter-spacing:0.5px">${letter}</div>`;
+        lastLetter = letter;
+      }
+      html += wordCard(w);
+    });
+  } else {
+    let lastDate = null;
+    words.forEach(w => {
+      if (w.date !== lastDate) {
+        const label = w.date === TODAY ? 'Today' : w.date;
+        html += `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-3);padding:12px 0 6px">${label}</div>`;
+        lastDate = w.date;
+      }
+      html += wordCard(w);
+    });
+  }
+
+  document.getElementById('allwords-list').innerHTML = html;
+}
+
+function wordCard(w) {
+  const safeWord = encodeURIComponent(w.word);
+  return `
+    <div class="word-list-item" style="cursor:pointer" onclick="openEdit('${safeWord}')">
+      <div class="wli-top">
+        <span class="wli-word">${w.word}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--text-3);font-style:italic">${w.pos||''}</span>
+          ${w.reviewedAt ? '<span style="font-size:10px;color:var(--success);background:var(--success-bg);padding:2px 7px;border-radius:99px">✓ reviewed</span>' : ''}
+          <span style="font-size:13px;color:var(--text-3)">✏️</span>
+        </span>
+      </div>
+      <div class="wli-meaning">${w.meaning||'<span style="color:var(--text-3);font-style:italic">No meaning saved</span>'}</div>
+      ${w.example ? `<div class="wli-ex">${w.example}</div>` : ''}
+    </div>
+  `;
+}
+
+/* ───── EDIT WORD ───── */
+let editingWord = null;
+
+function openEdit(encodedWord) {
+  const word = decodeURIComponent(encodedWord);
+  const d = load();
+  const w = d.words.find(x => x.word === word);
+  if (!w) return;
+  editingWord = word;
+  document.getElementById('edit-word').value = w.word;
+  document.getElementById('edit-pos').value = w.pos || '';
+  document.getElementById('edit-meaning').value = w.meaning || '';
+  document.getElementById('edit-example').value = w.example || '';
+  showPage('page-edit');
+}
+
+function saveEdit() {
+  if (!editingWord) return;
+  const d = load();
+  const idx = d.words.findIndex(x => x.word === editingWord);
+  if (idx === -1) return;
+  const newWord = document.getElementById('edit-word').value.trim();
+  const meaning = document.getElementById('edit-meaning').value.trim();
+  if (!newWord) { alert('Word cannot be empty.'); return; }
+  d.words[idx].word = newWord;
+  d.words[idx].pos = document.getElementById('edit-pos').value.trim();
+  d.words[idx].meaning = meaning;
+  d.words[idx].example = document.getElementById('edit-example').value.trim();
+  save(d);
+  editingWord = newWord;
+  showPage('page-allwords');
+  renderAllWords();
+  // flash saved confirmation
+  const meta = document.getElementById('allwords-meta');
+  const prev = meta.textContent;
+  meta.textContent = '✓ Changes saved!';
+  meta.style.color = 'var(--success)';
+  setTimeout(() => { meta.style.color = ''; renderAllWords(); }, 1800);
+}
+
+function deleteWord() {
+  if (!editingWord) return;
+  if (!confirm(`Delete "${editingWord}"? This cannot be undone.`)) return;
+  const d = load();
+  d.words = d.words.filter(x => x.word !== editingWord);
+  save(d);
+  editingWord = null;
+  showPage('page-allwords');
+  renderAllWords();
+  refreshHome();
+}
+
+function exportWords() {
+  const d = load();
+  if (!d.words.length) { alert('No words saved yet!'); return; }
+  const rows = ['Word,Part of Speech,Meaning,Example,Date Added'];
+  d.words.forEach(w => {
+    rows.push([w.word, w.pos||'', w.meaning||'', w.example||'', w.date].map(v => `"${v.replace(/"/g,'""')}"`).join(','));
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vocabcoach-words.csv';
+  a.click();
+}
+
+document.getElementById('back-allwords').addEventListener('click', () => {
+  showPage('page-home'); refreshHome();
+});
+document.getElementById('edit-delete-btn').addEventListener('click', deleteWord);
+
+/* ───── VOCAB PLAY ───── */
+let playWords = [], playIdx = 0, playScore = 0, playTotal = 0, playStreak = 0;
+const playRoundSize = 7;
+
+function startVocabPlay() {
+  const d = load();
+  const pool = d.words.filter(w => w.meaning);
+  if (pool.length < 2) {
+    alert('You need at least 2 words with meanings saved to play!');
+    return;
+  }
+  playWords = [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(playRoundSize, pool.length));
+  playIdx = 0; playScore = 0; playTotal = 0; playStreak = 0;
+  showPage('page-play');
+  document.getElementById('play-active').style.display = 'block';
+  document.getElementById('play-done').style.display = 'none';
+  renderPlayWord();
+}
+
+function renderPlayWord() {
+  const w = playWords[playIdx];
+  document.getElementById('play-word').textContent = w.word;
+  document.getElementById('play-pos').textContent = w.pos || '';
+  document.getElementById('play-round-display').textContent = `Word ${playIdx + 1} of ${playWords.length}`;
+  document.getElementById('play-score-display').textContent = playScore;
+  document.getElementById('play-total-display').textContent = playTotal;
+  document.getElementById('play-streak-display').textContent = playStreak > 1 ? `🔥 ${playStreak} streak` : '';
+  document.getElementById('play-mode-label').textContent = 'Write the meaning';
+  document.getElementById('play-type-input').value = '';
+  document.getElementById('play-type-reveal').style.display = 'none';
+  document.getElementById('play-verdict').style.display = 'none';
+  document.getElementById('play-type-check').style.display = 'block';
+  document.getElementById('play-type-next').style.display = 'none';
+}
+
+function checkPlayTyped() {
+  const typed = document.getElementById('play-type-input').value.trim().toLowerCase();
+  if (!typed) { alert('Please write your answer first!'); return; }
+
+  const w = playWords[playIdx];
+  playTotal++;
+
+  const meaning = (w.meaning || '').toLowerCase();
+  const wordLower = w.word.toLowerCase();
+
+  // extract key words from meaning (words >3 chars, skip common stopwords)
+  const stopwords = new Set(['that','this','with','from','have','been','they','their','will','when','which','about','into','more','also','than','then','some','used','very','just','each','make','like','well','over','such','even','most','after','before','should','could','would','being','having','using','does','made','much','many','both','same','only','back','come','here','give','take','know','good','need','what','where','were','there','those','these','your','for','the','and','are','was','not','but','can','all','had','its','one','has','him','his','her','she','him','who','how','our']);
+  const keyWords = meaning.split(/\s+/).filter(w => w.length > 3 && !stopwords.has(w.replace(/[^a-z]/g,'')));
+
+  // check how many key words appear in typed answer
+  const matchCount = keyWords.filter(k => typed.includes(k.replace(/[^a-z]/g,''))).length;
+  const matchRatio = keyWords.length > 0 ? matchCount / keyWords.length : 0;
+
+  // also check if word is used in a sentence attempt
+  const usedWord = typed.includes(wordLower) || typed.includes(wordLower.replace(/[^a-z]/g,''));
+
+  let verdict, points, bg, border, textColor, icon, msg;
+
+  if (matchRatio >= 0.5 || (usedWord && typed.length > 15)) {
+    // correct or good enough
+    verdict = 'correct';
+    points = 10;
+    bg = 'var(--success-bg)'; border = 'var(--success)'; textColor = 'var(--success)';
+    icon = '✅';
+    msg = matchRatio >= 0.7
+      ? 'Spot on! You clearly know this word.'
+      : 'Good enough! Your answer captures the meaning well.';
+  } else if (matchRatio >= 0.2 || (usedWord && typed.length > 8)) {
+    // partial
+    verdict = 'partial';
+    points = 5;
+    bg = 'var(--warn-bg)'; border = '#F0D98A'; textColor = 'var(--warn-text)';
+    icon = '🟡';
+    msg = 'Partially correct — you got part of it. See the full meaning below.';
+  } else {
+    // wrong
+    verdict = 'incorrect';
+    points = 0;
+    bg = 'var(--danger-bg)'; border = 'var(--danger)'; textColor = 'var(--danger)';
+    icon = '❌';
+    msg = 'Not quite. Study the actual meaning below.';
+  }
+
+  playScore += points;
+  if (verdict === 'correct') playStreak++;
+  else if (verdict === 'incorrect') playStreak = 0;
+
+  document.getElementById('play-score-display').textContent = playScore;
+  document.getElementById('play-streak-display').textContent = playStreak > 1 ? `🔥 ${playStreak} streak` : '';
+
+  // show verdict banner
+  const verdictEl = document.getElementById('play-verdict');
+  verdictEl.style.cssText = `display:block;background:${bg};border:1px solid ${border};color:${textColor};border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.6`;
+  verdictEl.innerHTML = `<strong>${icon} ${points > 0 ? `+${points} pts — ` : ''}${msg}</strong>`;
+
+  // always reveal actual meaning
+  document.getElementById('play-type-reveal-text').textContent = w.meaning;
+  const exEl = document.getElementById('play-type-example');
+  exEl.innerHTML = w.example ? `<em style="font-size:13px;color:var(--text-3)">"${w.example}"</em>` : '';
+  document.getElementById('play-type-reveal').style.display = 'block';
+
+  document.getElementById('play-type-check').style.display = 'none';
+  document.getElementById('play-type-next').style.display = 'block';
+}
+
+function nextPlayWord() {
+  playIdx++;
+  if (playIdx >= playWords.length) showPlayDone();
+  else renderPlayWord();
+}
+
+function showPlayDone() {
+  document.getElementById('play-active').style.display = 'none';
+  document.getElementById('play-done').style.display = 'block';
+  const pct = playWords.length > 0 ? Math.round((playScore / (playWords.length * 10)) * 100) : 0;
+  const emoji = pct >= 80 ? '🏆' : pct >= 50 ? '🎯' : '💪';
+  const title = pct >= 80 ? 'Excellent round!' : pct >= 50 ? 'Good effort!' : 'Keep practising!';
+  document.getElementById('play-done-emoji').textContent = emoji;
+  document.getElementById('play-done-title').textContent = title;
+  document.getElementById('play-done-sub').textContent = `You scored ${playScore} out of ${playWords.length * 10} possible points.`;
+  document.getElementById('play-done-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${playScore}</div><div class="stat-label">Score</div></div>
+    <div class="stat-box"><div class="stat-num">${pct}%</div><div class="stat-label">Accuracy</div></div>
+    <div class="stat-box"><div class="stat-num">${playWords.length}</div><div class="stat-label">Words played</div></div>
+  `;
+}
+
+/* ───── SENTENCE CHALLENGE ───── */
+let scWord = null, scQuestion = null, scQCount = 0, scScore = 0;
+
+const Q_TYPES = [
+  'fill_in_blank',
+  'sentence_correction',
+  'use_in_sentence',
+  'choose_right_context',
+  'spot_the_error'
+];
+
+function startSentenceChallenge() {
+  const d = load();
+  const pool = d.words.filter(w => w.meaning);
+  if (pool.length < 1) {
+    alert('Add at least one word with a meaning to start the Sentence Challenge!');
+    return;
+  }
+  scQCount = 0; scScore = 0;
+  showPage('page-sentence');
+  scShow('loading');
+  loadSentenceQuestion();
+}
+
+function scShow(state) {
+  ['loading','question-area','feedback-area','error'].forEach(s =>
+    document.getElementById('sc-' + s).style.display = 'none'
+  );
+  document.getElementById('sc-' + state).style.display = 'block';
+}
+
+async function loadSentenceQuestion() {
+  const d = load();
+  const pool = d.words.filter(w => w.meaning);
+  scWord = pool[Math.floor(Math.random() * pool.length)];
+  const qType = Q_TYPES[Math.floor(Math.random() * Q_TYPES.length)];
+
+  scShow('loading');
+
+  const typeLabels = {
+    fill_in_blank: 'Fill in the blank',
+    sentence_correction: 'Sentence correction',
+    use_in_sentence: 'Use it in a sentence',
+    choose_right_context: 'Right context',
+    spot_the_error: 'Spot the error'
+  };
+
+  const prompt = `You are a banking exam English trainer for Indian aspirants preparing for SBI PO, IBPS PO, and similar exams.
+
+Word: "${scWord.word}"
+Part of speech: ${scWord.pos || 'unknown'}
+Meaning: "${scWord.meaning}"
+${scWord.example ? `Example: "${scWord.example}"` : ''}
+
+Generate a single "${qType}" type question to test this word in exam context.
+
+Rules:
+- Question type: ${qType}
+- For fill_in_blank: write a sentence with _______ where the word fits, related to banking/economy/current affairs context
+- For sentence_correction: write a sentence using the word INCORRECTLY (wrong form, wrong context, or wrong placement), ask them to correct it
+- For use_in_sentence: give the meaning only, ask them to write a sentence using the word in a banking/finance context
+- For choose_right_context: describe two scenarios, ask which one correctly uses the word "${scWord.word}"
+- For spot_the_error: write a paragraph with ONE subtle error in how the word is used, ask them to spot and fix it
+- Make it feel like a real bank exam question
+- Keep it concise and clear
+
+Respond ONLY with valid JSON, no markdown, no explanation:
+{
+  "question_type": "${qType}",
+  "question": "the full question text",
+  "hint": "a subtle hint if needed (or empty string)",
+  "ideal_answer": "what a good answer looks like"
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    scQuestion = JSON.parse(clean);
+
+    scQCount++;
+    document.getElementById('sc-counter').textContent = `Q ${scQCount}`;
+    document.getElementById('sc-score').textContent = scScore;
+    document.getElementById('sc-word-chip').textContent = scWord.word;
+    document.getElementById('sc-meaning-hint').textContent = `Meaning: ${scWord.meaning}`;
+    document.getElementById('sc-qtype-label').textContent = typeLabels[scQuestion.question_type] || qType;
+    document.getElementById('sc-question-text').textContent = scQuestion.question;
+    document.getElementById('sc-answer').value = '';
+    document.getElementById('sc-submit-btn').disabled = false;
+    document.getElementById('sc-submit-btn').textContent = 'Submit answer →';
+    scShow('question-area');
+
+  } catch (err) {
+    document.getElementById('sc-error-msg').textContent = 'Could not generate question. Check your connection and try again.';
+    scShow('error');
+  }
+}
+
+async function submitSentenceAnswer() {
+  const answer = document.getElementById('sc-answer').value.trim();
+  if (!answer) { alert('Please write your answer first!'); return; }
+
+  const btn = document.getElementById('sc-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Evaluating…';
+  scShow('question-area');
+
+  const evalPrompt = `You are a strict but encouraging banking exam English evaluator for Indian aspirants (SBI PO, IBPS PO level).
+
+Word being tested: "${scWord.word}"
+Meaning: "${scWord.meaning}"
+Question type: ${scQuestion.question_type}
+Question asked: "${scQuestion.question}"
+Ideal answer: "${scQuestion.ideal_answer}"
+Student's answer: "${answer}"
+
+Evaluate the student's answer strictly but fairly. Consider:
+- Correct usage of the word
+- Grammar and sentence structure
+- Contextual appropriateness (banking/finance context preferred)
+- Partial credit for close answers
+
+Respond ONLY with valid JSON, no markdown:
+{
+  "verdict": "correct" or "partial" or "incorrect",
+  "score_awarded": 10 or 5 or 0,
+  "feedback": "2-3 sentences: what was right, what was wrong, and one tip to improve",
+  "model_answer": "write a perfect model answer for this question"
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: evalPrompt }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    scScore += result.score_awarded || 0;
+    document.getElementById('sc-score').textContent = scScore;
+
+    const colors = {
+      correct:   { bg: 'var(--success-bg)', border: 'var(--success)', text: 'var(--success)', icon: '✅' },
+      partial:   { bg: 'var(--warn-bg)',    border: '#F0D98A',         text: 'var(--warn-text)', icon: '🟡' },
+      incorrect: { bg: 'var(--danger-bg)',  border: 'var(--danger)',   text: 'var(--danger)',  icon: '❌' }
+    };
+    const c = colors[result.verdict] || colors.incorrect;
+
+    document.getElementById('sc-feedback-box').style.cssText =
+      `background:${c.bg};border:1px solid ${c.border};border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px`;
+    document.getElementById('sc-feedback-box').innerHTML = `
+      <div style="font-size:15px;font-weight:600;color:${c.text};margin-bottom:8px">${c.icon} ${result.verdict === 'correct' ? 'Correct! +10' : result.verdict === 'partial' ? 'Partially correct +5' : 'Incorrect — no points'}</div>
+      <div style="font-size:14px;color:var(--text);line-height:1.7;margin-bottom:10px">${result.feedback}</div>
+      <div style="border-top:1px solid ${c.border};padding-top:10px;margin-top:4px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-3);margin-bottom:5px">Model answer</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6;font-style:italic">${result.model_answer}</div>
+      </div>
+    `;
+    document.getElementById('sc-your-answer-display').textContent = answer;
+    scShow('feedback-area');
+
+  } catch (err) {
+    document.getElementById('sc-error-msg').textContent = 'Could not evaluate your answer. Try again.';
+    scShow('error');
+  }
+}
+
+refreshHome();
+</script>
+
+</div>
+</body>
+</html>
